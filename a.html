@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLB Viewer with Three.js</title>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js",
+                "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js",
+                "three/examples/jsm/controls/OrbitControls.js": "https://cdn.jsdelivr.net/npm/three@0.169/examples/jsm/controls/OrbitControls.js",
+                "three/examples/jsm/loaders/DRACOLoader.js": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/DRACOLoader.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+        import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+        
+
+        // 기본적인 씬 설정
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 조명 추가
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+                // DRACOLoader 설정
+        const dracoLoader = new DRACOLoader();
+        
+        dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/libs/draco/'); // Draco 디코더 경로 설정
+
+
+        // GLB 파일 로드
+        const loader = new GLTFLoader();
+        loader.setDRACOLoader(dracoLoader); // DRACOLoader 인스턴스를 GLTFLoader에 설정
+        loader.load('http://localhost:5501/gltf/ferrari.glb', (gltf) => {
+            scene.add(gltf.scene);
+            gltf.scene.scale.set(100,100,100); // 모델 크기 조정
+            //gltf.scene.scale.set(30,30,30); // 모델 크기 조정
+        }, undefined, (error) => {
+            console.error(error);
+        });
+
+        const controls = new OrbitControls( camera, renderer.domElement );
+				controls.addEventListener( 'change', render ); // use if there is no animation loop
+				controls.minDistance = 400;
+				controls.maxDistance = 1000;
+				controls.target.set( 10, 90, - 16 );
+				controls.update();
+
+        camera.position.z = 5;
+
+        // 애니메이션 루프
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // 윈도우 크기 변경 시 렌더러 크기 조정
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        function render() {
+
+renderer.render( scene, camera );
+
+}
+    </script>
+</head>
+<body>
+</body>
+</html>
